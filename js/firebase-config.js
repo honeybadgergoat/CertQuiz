@@ -32,6 +32,13 @@ try {
 
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
+    
+    // Configure Firestore settings to ensure production mode
+    // This helps prevent "local address space" CORS errors on GitHub Pages
+    db.settings({
+        ignoreUndefinedProperties: true
+    });
+    
     console.log('✅ Firebase initialized successfully');
 } catch (error) {
     console.error('❌ Error initializing Firebase:', error.message);
