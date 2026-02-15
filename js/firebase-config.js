@@ -26,23 +26,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-const forceFirebase = searchParams ? searchParams.get('firebase') === '1' : false;
-const isGitHubPages = hostname.endsWith('.github.io');
-const FIREBASE_ENABLED = !isGitHubPages || forceFirebase;
-const db = FIREBASE_ENABLED ? getFirestore(app) : null;
+const db = getFirestore(app);
 
 console.log("✅ Firebase v9 initialized");
 console.log('[Firebase Debug] Runtime config', {
     hostname,
     origin: typeof window !== 'undefined' ? window.location.origin : null,
-    isGitHubPages,
-    forceFirebase,
-    FIREBASE_ENABLED,
+    FIREBASE_ENABLED: true,
     projectId: firebaseConfig.projectId
 });
-if (!FIREBASE_ENABLED) {
-    console.warn('Firebase disabled on GitHub Pages. Add ?firebase=1 to force-enable.');
-}
 
-export { db, FIREBASE_ENABLED };
+export { db };
