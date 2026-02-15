@@ -5,7 +5,7 @@
 // Import comments system and Firebase
 import { initializeComments } from './comments.js';
 import { db } from './firebase-config.js';
-import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 // Main quiz state and variables
 let currentQuestionIndex = 0;
@@ -162,9 +162,17 @@ async function loadQuizData(topic) {
     }
 
     importPromise.then(module => {
-        selectedQuizData = module.quizData;
+        selectedQuizData = Array.isArray(module.quizData) ? module.quizData : [];
         console.log(`Loaded ${selectedQuizData.length} questions from local files`);
         hideLoadingMessage();
+
+        if (selectedQuizData.length === 0) {
+            alert(`No local quiz questions found for "${topic}". Please load questions in Firebase or add local quiz data.`);
+            if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+            if (setupContainer) setupContainer.style.display = 'none';
+            return;
+        }
+
         setupQuizConfig();
     }).catch(error => {
         console.error('Error loading local quiz data:', error);

@@ -12,7 +12,7 @@
 // TODO: Replace this with your actual Firebase configuration
 // Get it from: https://console.firebase.google.com/ > Project Settings
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAW2uOYbgqQ3G_7krgW-PM4nQ8vQfA3l_k",
