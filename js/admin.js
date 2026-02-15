@@ -11,7 +11,7 @@ import {
     doc,
     getDocs,
     updateDoc
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 // Admin credentials loaded from environment configuration
 const ADMIN_CREDENTIALS = {

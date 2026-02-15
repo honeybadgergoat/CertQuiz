@@ -1,4 +1,4 @@
-const quizData = []:
+const quizData = [];
 // const quizData = [
 //     {
 //         "question": "Universal Containers (UC) currently owns a middleware tool and has developed an API-led Integration architecture with three API tiers: The first tier interfaces directly with the systems of engagement, the second tier implements business logic and aggregates data, and the third tier interfaces directly with the systems of record. Some of the systems of engagement will be a mobile application, a web application, and Salesforce. UC has a business requirement to return data to the systems of engagement in different formats while also enforcing different security protocols. What should an integration architect recommend to meet these requirements? ",

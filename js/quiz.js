@@ -5,7 +5,7 @@
 // Import comments system and Firebase
 import { initializeComments } from './comments.js';
 import { db } from './firebase-config.js';
-import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 // Main quiz state and variables
 let currentQuestionIndex = 0;
@@ -20,7 +20,7 @@ let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
 let selectedTopic = null; // 'architect', 'cloud', 'integration', or 'lifecycle'
-let useFirebase = true; // Flag to use Firebase or local data
+const useFirebase = true; // Firebase-only mode
 
 // DOM elements
 const topicSelectionContainer = document.getElementById('topic-selection-container');
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Set up the topic selection screen
+ * Set up the topic selection screen 
  */
 function setupTopicSelection() {
     // Show topic selection, hide others
@@ -96,9 +96,17 @@ function setupTopicSelection() {
 
 
 /**
- * Dynamically import the selected quiz data file or load from Firebase
+ * Load selected quiz data from Firebase
  */
 async function loadQuizData(topic) {
+    console.log('[Quiz Debug] loadQuizData called', {
+        topic,
+        useFirebase,
+        hasDb: !!db,
+        hostname: typeof window !== 'undefined' ? window.location.hostname : null,
+        origin: typeof window !== 'undefined' ? window.location.origin : null
+    });
+
     // Show loading state if needed
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'block';
@@ -110,67 +118,67 @@ async function loadQuizData(topic) {
     // Use topic as-is for Firebase
     let firebaseTopic = topic;
 
-    // Try to load from Firebase first
-    if (db && useFirebase) {
-        try {
-            showLoadingMessage('Loading questions from database...');
+    if (!db || !useFirebase) {
+        console.error('[Quiz Debug] Firebase unavailable in Firebase-only mode');
+        hideLoadingMessage();
+        alert('Firebase is not available. Please check configuration and reload.');
+        if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+        if (setupContainer) setupContainer.style.display = 'none';
+        return;
+    }
 
-            const questionsQuery = query(
-                collection(db, 'questions'),
-                where('topic', '==', firebaseTopic)
-            );
-            const snapshot = await getDocs(questionsQuery);
+    console.log('[Quiz Debug] Attempting Firebase query', {
+        collection: 'questions',
+        field: 'topic',
+        operator: '==',
+        value: firebaseTopic
+    });
 
-            if (snapshot.size > 0) {
-                const questions = [];
-                snapshot.forEach(doc => {
-                    questions.push(doc.data());
-                });
+    try {
+        showLoadingMessage('Loading questions from database...');
 
-                // Sort by question number
-                questions.sort((a, b) => (a.questionNumber || 0) - (b.questionNumber || 0));
+        const questionsQuery = query(
+            collection(db, 'questions'),
+            where('topic', '==', firebaseTopic)
+        );
+        const snapshot = await getDocs(questionsQuery);
+        console.log('[Quiz Debug] Firebase query completed', {
+            snapshotSize: snapshot.size,
+            empty: snapshot.empty
+        });
 
-                selectedQuizData = questions;
-                console.log(`Loaded ${questions.length} questions from Firebase for topic: ${firebaseTopic}`);
-                hideLoadingMessage();
-                setupQuizConfig();
-                return;
-            } else {
-                console.warn(`No questions found in Firebase for topic: ${firebaseTopic}. Falling back to local data.`);
-                useFirebase = false;
-            }
-        } catch (error) {
-            console.error('Error loading questions from Firebase:', error);
-            console.log('Falling back to local quiz data files...');
-            useFirebase = false;
+        if (snapshot.size === 0) {
+            console.error('[Quiz Debug] Firebase returned empty snapshot', { topic: firebaseTopic });
+            hideLoadingMessage();
+            alert(`No questions found in Firebase for topic "${firebaseTopic}".`);
+            if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+            if (setupContainer) setupContainer.style.display = 'none';
+            return;
         }
-    }
 
-    // Fallback: Load from local files
-    hideLoadingMessage();
-    showLoadingMessage('Loading questions from local files...');
+        const questions = [];
+        snapshot.forEach(doc => {
+            questions.push(doc.data());
+        });
 
-    let importPromise;
-    if (topic === 'architect') {
-        importPromise = import('../data/quiz-data.js');
-    } else if (topic === 'cloud') {
-        importPromise = import('../data/quiz-data-cloud.js');
-    } else if (topic === 'integration') {
-        importPromise = import('../data/quiz-integration.js');
-    } else if (topic === 'lifecycle') {
-        importPromise = import('../data/quiz-development-lifecycle-and-deployment.js');
-    }
-
-    importPromise.then(module => {
-        selectedQuizData = module.quizData;
-        console.log(`Loaded ${selectedQuizData.length} questions from local files`);
+        questions.sort((a, b) => (a.questionNumber || 0) - (b.questionNumber || 0));
+        selectedQuizData = questions;
+        console.log(`Loaded ${questions.length} questions from Firebase for topic: ${firebaseTopic}`);
+        console.log('[Quiz Debug] Using Firebase data path');
         hideLoadingMessage();
         setupQuizConfig();
-    }).catch(error => {
-        console.error('Error loading local quiz data:', error);
+    } catch (error) {
+        console.error('Error loading questions from Firebase:', error);
+        console.error('[Quiz Debug] Firebase query failed details', {
+            code: error?.code,
+            message: error?.message,
+            name: error?.name
+        });
         hideLoadingMessage();
-        alert('Error loading quiz questions. Please refresh the page and try again.');
-    });
+        alert('Failed to load questions from Firebase. Check network/DNS and Firebase rules.');
+        if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
+        if (setupContainer) setupContainer.style.display = 'none';
+    }
 }
 
 /**

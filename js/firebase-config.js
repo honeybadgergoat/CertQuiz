@@ -12,7 +12,7 @@
 // TODO: Replace this with your actual Firebase configuration
 // Get it from: https://console.firebase.google.com/ > Project Settings
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAW2uOYbgqQ3G_7krgW-PM4nQ8vQfA3l_k",
@@ -25,8 +25,15 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
 const db = getFirestore(app);
 
 console.log("✅ Firebase v9 initialized");
+console.log('[Firebase Debug] Runtime config', {
+    hostname,
+    origin: typeof window !== 'undefined' ? window.location.origin : null,
+    FIREBASE_ENABLED: true,
+    projectId: firebaseConfig.projectId
+});
 
 export { db };

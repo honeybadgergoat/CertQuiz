@@ -14,7 +14,7 @@ import {
     serverTimestamp,
     updateDoc,
     where
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 // Anonymous name generator
 const adjectives = [
