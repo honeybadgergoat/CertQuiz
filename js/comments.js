@@ -4,6 +4,17 @@
  */
 
 import { db } from './firebase-config.js';
+import {
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    serverTimestamp,
+    updateDoc,
+    where
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Anonymous name generator
 const adjectives = [
@@ -165,14 +176,14 @@ async function submitComment(questionId) {
 
     try {
         // Add comment to Firebase
-        await db.collection('comments').add({
+        await addDoc(collection(db, 'comments'), {
             questionId: questionId,
             text: commentText,
             author: userName,
             isAnonymous: isAnonymous,
             userId: getUserId(),
             votes: 0,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            timestamp: serverTimestamp(),
             createdAt: new Date().toISOString()
         });
 
@@ -213,9 +224,11 @@ async function loadComments(questionId) {
 
         // Query comments for this question
         // We'll sort them manually to avoid needing a composite index
-        const snapshot = await db.collection('comments')
-            .where('questionId', '==', questionId)
-            .get();
+        const commentsQuery = query(
+            collection(db, 'comments'),
+            where('questionId', '==', questionId)
+        );
+        const snapshot = await getDocs(commentsQuery);
 
         console.log('Query successful. Found', snapshot.size, 'comments');
 
@@ -353,15 +366,15 @@ async function handleVote(commentId, voteType, questionId) {
     const currentVote = userVotes[commentId];
 
     try {
-        const commentRef = db.collection('comments').doc(commentId);
-        const doc = await commentRef.get();
+        const commentRef = doc(db, 'comments', commentId);
+        const commentDoc = await getDoc(commentRef);
 
-        if (!doc.exists) {
+        if (!commentDoc.exists()) {
             console.error('Comment not found');
             return;
         }
 
-        const currentVoteCount = doc.data().votes || 0;
+        const currentVoteCount = commentDoc.data().votes || 0;
         let newVoteCount = currentVoteCount;
 
         // Calculate new vote count based on current and new vote
@@ -380,7 +393,7 @@ async function handleVote(commentId, voteType, questionId) {
         }
 
         // Update vote count in Firebase
-        await commentRef.update({
+        await updateDoc(commentRef, {
             votes: newVoteCount
         });
 

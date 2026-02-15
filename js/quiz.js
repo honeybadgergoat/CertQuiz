@@ -5,6 +5,7 @@
 // Import comments system and Firebase
 import { initializeComments } from './comments.js';
 import { db } from './firebase-config.js';
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Main quiz state and variables
 let currentQuestionIndex = 0;
@@ -114,9 +115,11 @@ async function loadQuizData(topic) {
         try {
             showLoadingMessage('Loading questions from database...');
 
-            const snapshot = await db.collection('questions')
-                .where('topic', '==', firebaseTopic)
-                .get();
+            const questionsQuery = query(
+                collection(db, 'questions'),
+                where('topic', '==', firebaseTopic)
+            );
+            const snapshot = await getDocs(questionsQuery);
 
             if (snapshot.size > 0) {
                 const questions = [];
