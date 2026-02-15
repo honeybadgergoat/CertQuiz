@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy fix/test branch to GitHub Pages
 
 on:
   # Runs on pushes to main branch
