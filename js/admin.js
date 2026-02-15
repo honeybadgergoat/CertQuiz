@@ -5,6 +5,13 @@
 
 import { db } from './firebase-config.js';
 import { envConfig } from './env-loader.js';
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Admin credentials loaded from environment configuration
 const ADMIN_CREDENTIALS = {
@@ -135,7 +142,7 @@ async function loadAllComments() {
     commentsList.innerHTML = '<div class="loading">Loading comments...</div>';
 
     try {
-        const snapshot = await db.collection('comments').get();
+        const snapshot = await getDocs(collection(db, 'comments'));
 
         allComments = [];
         snapshot.forEach(doc => {
@@ -271,7 +278,7 @@ async function deleteComment(commentId) {
     }
 
     try {
-        await db.collection('comments').doc(commentId).delete();
+        await deleteDoc(doc(db, 'comments', commentId));
 
         // Remove from local array
         allComments = allComments.filter(c => c.id !== commentId);
@@ -402,7 +409,7 @@ async function loadAllQuestions() {
     questionsList.innerHTML = '<div class="loading">Loading questions...</div>';
 
     try {
-        const snapshot = await db.collection('questions').get();
+        const snapshot = await getDocs(collection(db, 'questions'));
 
         allQuestions = [];
         snapshot.forEach(doc => {
@@ -581,7 +588,7 @@ async function deleteQuestion(questionId) {
     }
 
     try {
-        await db.collection('questions').doc(questionId).delete();
+        await deleteDoc(doc(db, 'questions', questionId));
 
         // Remove from local array
         allQuestions = allQuestions.filter(q => q.id !== questionId);
@@ -750,7 +757,7 @@ window.saveQuestion = async function() {
 
     try {
         // Update in Firebase
-        await db.collection('questions').doc(questionId).update(updatedQuestion);
+        await updateDoc(doc(db, 'questions', questionId), updatedQuestion);
 
         // Update local array
         const index = allQuestions.findIndex(q => q.id === questionId);
@@ -866,7 +873,7 @@ window.deleteCommentFromQuestion = async function(commentId) {
     }
 
     try {
-        await db.collection('comments').doc(commentId).delete();
+        await deleteDoc(doc(db, 'comments', commentId));
 
         // Remove from local arrays
         allComments = allComments.filter(c => c.id !== commentId);

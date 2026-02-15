@@ -11,6 +11,9 @@
 
 // TODO: Replace this with your actual Firebase configuration
 // Get it from: https://console.firebase.google.com/ > Project Settings
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyAW2uOYbgqQ3G_7krgW-PM4nQ8vQfA3l_k",
     authDomain: "certquiz-aada9.firebaseapp.com",
@@ -21,22 +24,9 @@ const firebaseConfig = {
     measurementId: "G-S1J6NPS95T"
 };
 
-// Initialize Firebase
-let db = null;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-try {
-    // Check if config is set
-    if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
-        throw new Error('Firebase configuration not set. Please update firebase-config.js with your Firebase project details.');
-    }
-
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    
-    console.log('✅ Firebase initialized successfully');
-} catch (error) {
-    console.error('❌ Error initializing Firebase:', error.message);
-    console.error('Please update js/firebase-config.js with your Firebase project configuration.');
-}
+console.log("✅ Firebase v9 initialized");
 
 export { db };
