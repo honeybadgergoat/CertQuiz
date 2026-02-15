@@ -4,7 +4,7 @@
 
 // Import comments system and Firebase
 import { initializeComments } from './comments.js';
-import { db } from './firebase-config.js';
+import { db, FIREBASE_ENABLED } from './firebase-config.js';
 import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-lite.js";
 
 // Main quiz state and variables
@@ -20,7 +20,7 @@ let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
 let selectedTopic = null; // 'architect', 'cloud', 'integration', or 'lifecycle'
-let useFirebase = true; // Flag to use Firebase or local data
+let useFirebase = FIREBASE_ENABLED; // Flag to use Firebase or local data
 
 // DOM elements
 const topicSelectionContainer = document.getElementById('topic-selection-container');
@@ -99,6 +99,14 @@ function setupTopicSelection() {
  * Dynamically import the selected quiz data file or load from Firebase
  */
 async function loadQuizData(topic) {
+    console.log('[Quiz Debug] loadQuizData called', {
+        topic,
+        useFirebase,
+        hasDb: !!db,
+        hostname: typeof window !== 'undefined' ? window.location.hostname : null,
+        origin: typeof window !== 'undefined' ? window.location.origin : null
+    });
+
     // Show loading state if needed
     if (topicSelectionContainer) topicSelectionContainer.style.display = 'none';
     if (setupContainer) setupContainer.style.display = 'block';
@@ -112,6 +120,12 @@ async function loadQuizData(topic) {
 
     // Try to load from Firebase first
     if (db && useFirebase) {
+        console.log('[Quiz Debug] Attempting Firebase query', {
+            collection: 'questions',
+            field: 'topic',
+            operator: '==',
+            value: firebaseTopic
+        });
         try {
             showLoadingMessage('Loading questions from database...');
 
@@ -120,6 +134,10 @@ async function loadQuizData(topic) {
                 where('topic', '==', firebaseTopic)
             );
             const snapshot = await getDocs(questionsQuery);
+            console.log('[Quiz Debug] Firebase query completed', {
+                snapshotSize: snapshot.size,
+                empty: snapshot.empty
+            });
 
             if (snapshot.size > 0) {
                 const questions = [];
@@ -132,18 +150,29 @@ async function loadQuizData(topic) {
 
                 selectedQuizData = questions;
                 console.log(`Loaded ${questions.length} questions from Firebase for topic: ${firebaseTopic}`);
+                console.log('[Quiz Debug] Using Firebase data path');
                 hideLoadingMessage();
                 setupQuizConfig();
                 return;
             } else {
                 console.warn(`No questions found in Firebase for topic: ${firebaseTopic}. Falling back to local data.`);
                 useFirebase = false;
+                console.warn('[Quiz Debug] Firebase returned empty snapshot; disabling Firebase for this session');
             }
         } catch (error) {
             console.error('Error loading questions from Firebase:', error);
+            console.error('[Quiz Debug] Firebase query failed details', {
+                code: error?.code,
+                message: error?.message,
+                name: error?.name
+            });
             console.log('Falling back to local quiz data files...');
             useFirebase = false;
         }
+    } else {
+        console.log('[Quiz Debug] Skipping Firebase query', {
+            reason: !db ? 'db_not_initialized_or_disabled' : 'useFirebase_false'
+        });
     }
 
     // Fallback: Load from local files
@@ -160,22 +189,45 @@ async function loadQuizData(topic) {
     } else if (topic === 'lifecycle') {
         importPromise = import('../data/quiz-development-lifecycle-and-deployment.js');
     }
+    console.log('[Quiz Debug] Local fallback import selected', {
+        topic,
+        path: topic === 'architect'
+            ? '../data/quiz-data.js'
+            : topic === 'cloud'
+                ? '../data/quiz-data-cloud.js'
+                : topic === 'integration'
+                    ? '../data/quiz-integration.js'
+                    : '../data/quiz-development-lifecycle-and-deployment.js'
+    });
 
     importPromise.then(module => {
         selectedQuizData = Array.isArray(module.quizData) ? module.quizData : [];
         console.log(`Loaded ${selectedQuizData.length} questions from local files`);
+        console.log('[Quiz Debug] Local module shape', {
+            hasQuizDataExport: Object.prototype.hasOwnProperty.call(module, 'quizData'),
+            quizDataType: typeof module.quizData,
+            isArray: Array.isArray(module.quizData)
+        });
         hideLoadingMessage();
 
         if (selectedQuizData.length === 0) {
+            console.error('[Quiz Debug] Local fallback loaded but question array is empty', { topic });
             alert(`No local quiz questions found for "${topic}". Please load questions in Firebase or add local quiz data.`);
             if (topicSelectionContainer) topicSelectionContainer.style.display = 'block';
             if (setupContainer) setupContainer.style.display = 'none';
             return;
         }
 
+        console.log('[Quiz Debug] Using local data path');
         setupQuizConfig();
     }).catch(error => {
         console.error('Error loading local quiz data:', error);
+        console.error('[Quiz Debug] Local import failed details', {
+            topic,
+            code: error?.code,
+            message: error?.message,
+            name: error?.name
+        });
         hideLoadingMessage();
         alert('Error loading quiz questions. Please refresh the page and try again.');
     });
