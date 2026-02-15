@@ -32,7 +32,7 @@ const isGitHubPages = hostname.endsWith('.github.io');
 const FIREBASE_ENABLED = !isGitHubPages || forceFirebase;
 const db = FIREBASE_ENABLED ? getFirestore(app) : null;
 
-console.log("✅ Firebase v9 initialized");
+console.log("✅ Firebase v9 initialized, done");
 console.log('[Firebase Debug] Runtime config', {
     hostname,
     origin: typeof window !== 'undefined' ? window.location.origin : null,
