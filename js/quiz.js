@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Set up the topic selection screen
+ * Set up the topic selection screen 
  */
 function setupTopicSelection() {
     // Show topic selection, hide others
