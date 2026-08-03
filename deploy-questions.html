@@ -187,6 +187,7 @@
                 <option value="cloud">Data Cloud</option>
                 <option value="integration">Integration</option>
                 <option value="lifecycle">Development Lifecycle & Deployment</option>
+                <option value="slack-admin">Slack Administrator</option>
             </select>
         </div>
 
@@ -249,11 +250,13 @@
                 dataFile = './data/quiz-integration.js';
             } else if (topic === 'lifecycle') {
                 dataFile = './data/quiz-development-lifecycle-and-deployment.js';
+            } else if (topic === 'slack-admin') {
+                dataFile = './data/quiz-slack-admin.js';
             }
 
             try {
                 const module = await import(dataFile);
-                return module.quizData;
+                return module.quizData || module.default;
             } catch (error) {
                 log(`Error loading quiz data from ${dataFile}: ${error.message}`, 'error');
                 console.error('Load error:', error);

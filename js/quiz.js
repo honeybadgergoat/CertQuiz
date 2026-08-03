@@ -19,7 +19,7 @@ let timer;
 let timeLeft = 0; // Will be set based on number of questions
 let questionCount = 15; // Default question count
 let selectedQuizData = null; // Will hold the loaded quiz data
-let selectedTopic = null; // 'architect', 'cloud', 'integration', or 'lifecycle'
+let selectedTopic = null; // 'architect', 'cloud', 'integration', 'lifecycle', or 'slack-admin'
 const useFirebase = true; // Firebase-only mode
 
 // DOM elements
@@ -28,6 +28,7 @@ const topicArchitectBtn = document.getElementById('topic-architect');
 const topicCloudBtn = document.getElementById('topic-cloud');
 const topicIntegrationBtn = document.getElementById('topic-integration');
 const topicLifecycleBtn = document.getElementById('topic-lifecycle');
+const topicSlackAdminBtn = document.getElementById('topic-slack-admin');
 const setupContainer = document.getElementById('setup-container');
 const questionCountInput = document.getElementById('question-count');
 const questionCountValue = document.getElementById('question-count-value');
@@ -90,6 +91,12 @@ function setupTopicSelection() {
         topicLifecycleBtn.addEventListener('click', function() {
             selectedTopic = 'lifecycle';
             loadQuizData('lifecycle');
+        });
+    }
+    if (topicSlackAdminBtn) {
+        topicSlackAdminBtn.addEventListener('click', function() {
+            selectedTopic = 'slack-admin';
+            loadQuizData('slack-admin');
         });
     }
 }
@@ -217,7 +224,7 @@ function hideLoadingMessage() {
 function updateQuizTitle(topic) {
     let title = 'Salesforce Quiz';
     const currentTopic = topic || selectedTopic;
-    
+
     if (currentTopic === 'architect') {
         title = 'Salesforce <span>Data Architect</span> Quiz';
     } else if (currentTopic === 'cloud') {
@@ -226,6 +233,8 @@ function updateQuizTitle(topic) {
         title = 'Salesforce <span>Integration</span> Quiz';
     } else if (currentTopic === 'lifecycle') {
         title = 'Salesforce <span>Development Lifecycle & Deployment</span> Quiz';
+    } else if (currentTopic === 'slack-admin') {
+        title = 'Salesforce <span>Slack Administrator</span> Quiz';
     }
     quizTitleEls.forEach(el => {
         el.innerHTML = title;

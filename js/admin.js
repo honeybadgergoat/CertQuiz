@@ -202,11 +202,13 @@ function updateQuestionStats() {
     const architectQuestions = allQuestions.filter(q => q.topic === 'architect').length;
     const cloudQuestions = allQuestions.filter(q => q.topic === 'cloud').length;
     const integrationQuestions = allQuestions.filter(q => q.topic === 'integration').length;
+    const slackAdminQuestions = allQuestions.filter(q => q.topic === 'slack-admin').length;
 
     document.getElementById('total-questions-db').textContent = totalQuestions;
     document.getElementById('architect-questions').textContent = architectQuestions;
     document.getElementById('cloud-questions').textContent = cloudQuestions;
     document.getElementById('integration-questions').textContent = integrationQuestions;
+    document.getElementById('slack-admin-questions').textContent = slackAdminQuestions;
 }
 
 /**
